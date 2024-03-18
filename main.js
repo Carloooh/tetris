@@ -44,6 +44,7 @@ volumeControl.addEventListener('input', () => {
 
 function playPiecePlacedSound() {
   if (!isMuted) {
+    piecePlacedSound.currentTime = 0;
     piecePlacedSound.play();
   }
 }
@@ -181,16 +182,16 @@ function checkCollision() {
   });
 }
 
-function solidifyPiece() {
-  let blocksCount = 0;
-  piece.shape.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value === 1) {
-        board[y + piece.position.y][x + piece.position.x] = 1;
-        blocksCount++;
-      }
+  function solidifyPiece() {
+    let blocksCount = 0;
+    piece.shape.forEach((row, y) => {
+      row.forEach((value, x) => {
+        if (value === 1) {
+          board[y + piece.position.y][x + piece.position.x] = 1;;
+          blocksCount++;
+        }
+      });
     });
-  });
 
   score += blocksCount;
   if (score > highScore) {
@@ -202,14 +203,16 @@ function solidifyPiece() {
   piece.position.y = 0;
   piece.shape = PIECES[Math.floor(Math.random() * PIECES.length)];
 
+  playPiecePlacedSound();
+
   if (checkCollision()) {
     playGameOverSound();
+    tetrisMusic.pause();
+    tetrisMusic.currentTime = 0;
     window.alert("Game Over");
     gameRunning = false;
     score = 0;
     board.forEach(row => row.fill(0));
-  } else {
-    playPiecePlacedSound();
   }
 }
 
