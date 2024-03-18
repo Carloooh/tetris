@@ -9,6 +9,57 @@ const BOARD_HEIGHT = 30;
 
 const $score = document.querySelector('span');
 const $highScore = document.querySelector('#highScore');
+const tetrisMusic = document.getElementById('tetrisMusic');
+tetrisMusic.volume = 0.1;
+const gameOverSound = document.getElementById('gameOverSound');
+const rowRemovedSound = document.getElementById('rowRemovedSound');
+const piecePlacedSound = document.getElementById('piecePlacedSound');
+const muteButton = document.getElementById('muteButton');
+const volumeControl = document.getElementById('volumeControl');
+
+let isMuted = false;
+
+muteButton.addEventListener('click', () => {
+  isMuted = !isMuted;
+  if (isMuted) {
+    tetrisMusic.pause();
+    gameOverSound.muted = true;
+    rowRemovedSound.muted = true;
+    piecePlacedSound.muted = true;
+  } else {
+    tetrisMusic.play();
+    gameOverSound.muted = false;
+    rowRemovedSound.muted = false;
+    piecePlacedSound.muted = false;
+  }
+});
+
+volumeControl.addEventListener('input', () => {
+  const volume = volumeControl.value;
+  tetrisMusic.volume = volume;
+  gameOverSound.volume = volume;
+  rowRemovedSound.volume = volume;
+  piecePlacedSound.volume = volume;
+});
+
+function playPiecePlacedSound() {
+  if (!isMuted) {
+    piecePlacedSound.play();
+  }
+}
+
+function playGameOverSound() {
+  if (!isMuted) {
+    gameOverSound.play();
+  }
+}
+
+function playRowRemovedSound() {
+  if (!isMuted) {
+    rowRemovedSound.play();
+  }
+}
+
 let score = 0;
 let highScore = localStorage.getItem('tetrisHighScore') || 0;
 
@@ -152,10 +203,13 @@ function solidifyPiece() {
   piece.shape = PIECES[Math.floor(Math.random() * PIECES.length)];
 
   if (checkCollision()) {
+    playGameOverSound();
     window.alert("Game Over");
     gameRunning = false;
     score = 0;
     board.forEach(row => row.fill(0));
+  } else {
+    playPiecePlacedSound();
   }
 }
 
@@ -166,6 +220,10 @@ function removeRows() {
       rowsToRemove.push(y);
     }
   });
+
+  if (rowsToRemove.length > 0) {
+    playRowRemovedSound();
+  }
 
   rowsToRemove.forEach(y => {
     board.splice(y, 1);
@@ -183,6 +241,9 @@ startButton.addEventListener('click', () => {
   if (!gameRunning) {
     gameRunning = true;
     update();
+    if (!isMuted) {
+      tetrisMusic.play();
+    }
   }
 });
 
@@ -190,10 +251,16 @@ pauseButton.addEventListener('click', () => {
   if (!gamePaused && gameRunning) {
     gamePaused = true;
     pauseButton.textContent = 'Resume';
+    if (!isMuted) {
+      tetrisMusic.pause();
+    }
   } else if (gamePaused && gameRunning) {
     gamePaused = false;
     pauseButton.textContent = 'Pause';
     update();
+    if (!isMuted) {
+      tetrisMusic.play();
+    }
   }
 });
 

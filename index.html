@@ -17,6 +17,25 @@
     </div>
     <strong>Score: <span></span></strong>
     <p>High Score: <span id="highScore"></span></p>
+    <audio id="tetrisMusic" loop>
+      <source src="/tetrisMusic.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="gameOverSound">
+      <source src="/gameOver.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="rowRemovedSound">
+      <source src="/rowRemoved.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="piecePlacedSound">
+      <source src="/piecePlaced.mp3" type="audio/mpeg">
+    </audio>
+    
+    <button id="muteButton">Mute</button>
+    <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="0.5">
+    
     <script type="module" src="/main.js"></script>
   </body>
 </html>
