@@ -378,7 +378,6 @@ function removeRows() {
   });
 }
 
-// Botones de control
 const startButton = document.getElementById('startButton');
 const pauseButton = document.getElementById('pauseButton');
 const restartButton = document.getElementById('restartButton');
