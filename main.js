@@ -273,6 +273,21 @@ restartButton.addEventListener('click', () => {
   piece.position.y = 0;
   piece.shape = PIECES[Math.floor(Math.random() * PIECES.length)];
   update();
+  tetrisMusic.pause();
+  tetrisMusic.currentTime = 0;
+  pauseButton.textContent = 'Pause';
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    if (!isMuted && gameRunning) {
+      tetrisMusic.pause();
+    }
+  } else {
+    if (!isMuted && gameRunning && !gamePaused) {
+      tetrisMusic.play();
+    }
+  }
 });
 
 document.addEventListener('keydown', event => {
