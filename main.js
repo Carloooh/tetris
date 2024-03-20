@@ -124,10 +124,10 @@ function update(time = 0) {
     lastTime = time;
 
     dropCounter += deltaTime;
-
-    if (dropCounter > 300) {
+    if (dropCounter > 400) {
       piece.position.y++;
       dropCounter = 0;
+
       if (checkCollision()) {
         piece.position.y--;
         solidifyPiece();
@@ -142,30 +142,123 @@ function update(time = 0) {
   }
 }
 
+
+function calculateGhostPiecePosition() {
+  let ghostPosition = { ...piece.position };
+  while (!checkCollisionGhost(ghostPosition)) {
+    ghostPosition.y++;
+  }
+  ghostPosition.y--;
+  return ghostPosition;
+}
+
+function checkCollisionGhost(ghostPosition) {
+  return piece.shape.some((row, y) =>
+    row.some((value, x) =>
+      value !== 0 && (
+        board[y + ghostPosition.y]?.[x + ghostPosition.x] !== 0 ||
+        x + ghostPosition.x < 0 ||
+        x + ghostPosition.x >= BOARD_WIDTH ||
+        y + ghostPosition.y >= BOARD_HEIGHT
+      )
+    )
+  );
+}
+
 function draw() {
-  context.fillStyle = '#000';
+  context.fillStyle = 'black';
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  board.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value === 1) {
-        context.fillStyle = 'yellow';
+  for (let y = 0; y < BOARD_HEIGHT; y++) {
+    for (let x = 0; x < BOARD_WIDTH; x++) {
+      if (board[y][x] !== 0) {
+        context.fillStyle = '#003';
         context.fillRect(x, y, 1, 1);
+        context.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        context.fillRect(x, y, 1, 1);
+        context.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        context.fillRect(x + 0.9, y, 0.1, 1);
+        context.fillRect(x, y + 0.9, 1, 0.1);
       }
-    });
-  });
+    }
+  }
 
   piece.shape.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value) {
-        context.fillStyle = 'red';
+        context.fillStyle = getPieceColor(piece.shape);
         context.fillRect(x + piece.position.x, y + piece.position.y, 1, 1);
+        context.fillStyle = 'rgba(255, 255, 255, 0)';
+        context.fillRect(x + piece.position.x, y + piece.position.y, 1, 1);
+        context.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        context.fillRect(x + piece.position.x + 0.9, y + piece.position.y, 0.1, 1);
+        context.fillRect(x + piece.position.x, y + piece.position.y + 0.9, 1, 0.1);
       }
     });
   });
 
+  const ghostPosition = calculateGhostPiecePosition();
+  context.globalAlpha = 0.3;
+  piece.shape.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value) {
+        context.fillStyle = getPieceColor(piece.shape);
+        context.fillRect(x + ghostPosition.x, y + ghostPosition.y, 1, 1);
+      }
+    });
+  });
+  context.globalAlpha = 1;
+
   $score.innerText = score;
   $highScore.innerText = highScore;
+}
+
+function getPieceColor(pieceShape) {
+  for (let i = 0; i < PIECES.length; i++) {
+    for (let j = 0; j < 4; j++) {
+      if (arraysMatch(PIECES[i], pieceShape)) {
+        switch (i) {
+          case 0:
+            return 'cyan';
+          case 1:
+            return 'yellow';
+          case 2:
+            return 'purple';
+          case 3:
+            return 'green';
+          case 4:
+            return 'red';
+          case 5:
+            return 'blue';
+          case 6:
+            return 'orange';
+        }
+      }
+      pieceShape = rotatePiece(pieceShape);
+    }
+  }
+  return 'white';
+}
+
+function rotatePiece(pieceShape) {
+  const rotatedPiece = [];
+  const rows = pieceShape.length;
+  const cols = pieceShape[0].length;
+  for (let i = 0; i < cols; i++) {
+    rotatedPiece.push([]);
+    for (let j = rows - 1; j >= 0; j--) {
+      rotatedPiece[i].push(pieceShape[j][i]);
+    }
+  }
+  return rotatedPiece;
+}
+
+function arraysMatch(arr1, arr2) {
+  if (arr1.length !== arr2.length) return false;
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i].toString() !== arr2[i].toString()) return false;
+  }
+  return true;
 }
 
 function checkCollision() {
@@ -182,16 +275,16 @@ function checkCollision() {
   });
 }
 
-  function solidifyPiece() {
-    let blocksCount = 0;
-    piece.shape.forEach((row, y) => {
-      row.forEach((value, x) => {
-        if (value === 1) {
-          board[y + piece.position.y][x + piece.position.x] = 1;;
-          blocksCount++;
-        }
-      });
+function solidifyPiece() {
+  let blocksCount = 0;
+  piece.shape.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value === 1) {
+        board[y + piece.position.y][x + piece.position.x] = 1;
+        blocksCount++;
+      }
     });
+  });
 
   score += blocksCount;
   if (score > highScore) {
@@ -329,6 +422,14 @@ document.addEventListener('keydown', event => {
       if (checkCollision()) {
         piece.shape = previousShape;
       }
+    }
+    if (event.key === ' ') {
+      while (!checkCollision()) {
+        piece.position.y++;
+      }
+      piece.position.y--;
+      solidifyPiece();
+      removeRows();
     }
   }
 });
