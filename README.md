@@ -1,3 +1,3 @@
 Tetris created with vanilla JavaScript
 
-Web ->
+Web -> tetris-three-chi.vercel.app
